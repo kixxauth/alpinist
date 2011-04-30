@@ -1,0 +1,56 @@
+#!/bin/bash
+
+LOCAL_BIN=$(cd `dirname $0` && pwd)
+ROOT=$(dirname $LOCAL_BIN)
+COFFEE_BIN=dev/third_party/coffee-script/bin
+NAVE_BIN=dev/third_party/nave
+
+if [ $(pwd) != $ROOT ]; then
+    echo 'You must be in the project directory for this command to work'
+    exit 1
+fi
+
+echo_out ()
+{
+    echo "init says: '$1'"
+}
+
+check_status ()
+{
+    if [ $? != 0 ]; then
+        exit $?
+    fi
+}
+
+echo_out 'initializing git submodules'
+
+git submodule init
+check_status
+
+echo_out 'updating git submodules'
+
+git submodule update
+git submodule foreach --recursive git pull
+check_status
+
+echo_out 'done initializing and updating git submodules'
+
+if ! [ -f $LOCAL_BIN/coffee ]; then
+    echo_out 'creating symlink to coffee'
+    ln -s $ROOT/$COFFEE_BIN/coffee $LOCAL_BIN/coffee
+fi
+check_status
+
+if ! [ -f $LOCAL_BIN/cake ]; then
+    echo_out 'creating symlink to cake'
+    ln -s $ROOT/$COFFEE_BIN/cake $LOCAL_BIN/cake
+fi
+check_status
+
+if ! [ -f $LOCAL_BIN/nave ]; then
+    echo_out 'creating symlink to nave'
+    ln -s $ROOT/$NAVE_BIN/nave.sh $LOCAL_BIN/nave
+fi
+check_status
+
+echo_out 'ok'

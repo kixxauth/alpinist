@@ -1,0 +1,9 @@
+[submodule "dev/third_party/nave"]
+	path = dev/third_party/nave
+	url = git://github.com/isaacs/nave.git
+[submodule "dev/third_party/jasmine-node"]
+	path = dev/third_party/jasmine-node
+	url = git://github.com/mhevery/jasmine-node.git
+[submodule "dev/third_party/coffee-script"]
+	path = dev/third_party/coffee-script
+	url = git://github.com/jashkenas/coffee-script.git
