@@ -1,7 +1,9 @@
-util   = require 'util'
-http   = require 'http'
 events = require 'events'
+util   = require 'util'
 fs     = require 'fs'
+http   = require 'http'
+
+httputil = require './httputil'
 
 
 class Proxy

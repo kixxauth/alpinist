@@ -70,9 +70,8 @@ describe 'parameters for httputil.bindServer()', ->
             port: 8001
             host: 'localhost'
             requestHandler: requestHandler
-            onSuccess: onSuccess
 
-        server = httputil.bindServer opts
+        server = httputil.bindServer opts, onSuccess
 
         server.on 'error', (err) ->
             util.debug "#{ JSON.stringify err }\n"
@@ -132,9 +131,8 @@ describe 'bindServer::server error emitter', ->
         opts =
             port: 8001
             host: 'localhost'
-            onSuccess: onSuccess
 
-        server = httputil.bindServer opts
+        server = httputil.bindServer opts, onSuccess
 
         server.on 'error', (err) ->
             util.debug "#{ JSON.stringify err }\n"
