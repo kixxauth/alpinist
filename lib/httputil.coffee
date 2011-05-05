@@ -68,12 +68,19 @@ class Client
             res.on 'data', (chunk) ->
                 buff += chunk
 
-            res.on 'end', ->
+            res.once 'end', ->
                 if rv then return
                 res.body = buff
                 rv =
                     error: null
                     response: res
+
+        request.once 'error', (err) ->
+            if rv then return
+            request.abort()
+            rv =
+                error: err
+                response: null
 
         request.end()
 
