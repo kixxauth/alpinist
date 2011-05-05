@@ -1,6 +1,5 @@
 events = require 'events'
 util   = require 'util'
-fs     = require 'fs'
 http   = require 'http'
 
 httputil = require './httputil'
@@ -15,20 +14,15 @@ class Proxy
 
     start: (conf, callback) ->
         @update conf
-        requestHandler = @makeRequestHandler()
         @startServers (err) ->
             if typeof callback is 'function'
                 if err then return callback err
-                return callback null, requestHandler
+                return callback()
 
         return
 
-    update: (conf) ->
-        if conf and typeof conf is 'object'
-            options = conf
-        else
-            optionsText = fs.readFileSync conf, 'utf8'
-            options = JSON.parse optionsText
+    update: (options) ->
+        # TODO: Validate configs and emit a warning for invalid configs.
 
         if not Array.isArray options.entries
             options.entries = [options.entries]
@@ -36,12 +30,14 @@ class Proxy
         if not Array.isArray options.bindings
             options.bindings = []
 
-        @entries = options.entries.map mapEntry
+        @entries = options.entries.map normalizeVhostEntry
         @bindings = options.bindings
         return options
 
     startServers: (callback) ->
         resolved = false
+        requestHandler = @makeRequestHandler()
+
         check = (server) =>
             if server then @serverMem.push server
             if not resolved and @bindings.length >= @serverMem.length
@@ -61,14 +57,17 @@ class Proxy
 
         for binding in @bindings
             binding or= {}
-            port = binding.port or= @defaultPort
-            host = binding.host or= @defaultHost
+            opts =
+                port: binding.port or= @defaultPort
+                host: binding.host or= @defaultHost
+                requestHandler: requestHandler
 
-            bindServer requestHandler, host, port, check, handleError
+            server = httputil.bindServer opts, check
+            server.once 'error', handleError
 
     makeRequestHandler: ->
         handler = (req, res) =>
-            vhost = @normalizeHost req.headers.host
+            vhost = normalizeHost req.headers.host
             entry = @testEntries vhost
             url = null
             host = null
@@ -77,7 +76,7 @@ class Proxy
             if not entry then return @write404 res, vhost
 
             if entry.rewrite_rules
-                {url, host, port} = @testRules entry.rewrite_rules, req.url
+                {url, host, port} = @testRewriteRules entry.rewrite_rules, req.url
 
             proxyOptions =
                 host: host or entry.host
@@ -151,15 +150,12 @@ class Proxy
 
         return
 
-    normalizeHost: (host) ->
-        return (if typeof host is 'string' then host else '').toLowerCase()
-
     testEntries: (vhost) ->
         for entry in @entries
             if entry.virtual_host is vhost
                 return entry
 
-    testRules: (rules, originalURL) ->
+    testRewriteRules: (rules, originalURL) ->
         newURL = originalURL
 
         for rule in rules
@@ -184,12 +180,34 @@ class Proxy
 
     write500: (res, err) ->
         res.writeHead 500, {'content-type': 'text/plain'}
-        body = "A server error has been intercepted: #{ JSON.stringify(err) }"
+        body = "A server error has been intercepted by proxy: 
+        #{ JSON.stringify(err) }"
         res.end body
         return
 
-# Utility
-mapRewriteRule = (rule) ->
+
+normalizeHost: (host) ->
+    return (if typeof host is 'string' then host else '').toLowerCase()
+
+normalizeVhostEntry = (entry) ->
+    entry or= {}
+    if typeof entry.virtual_host isnt 'string'
+        entry.virtual_host = 'localhost'
+
+    if typeof entry.port isnt 'number'
+        entry.port = 8080
+
+    if typeof entry.host isnt 'string'
+        entry.host = '127.0.0.1'
+
+        if Array.isArray(entry.rewrite_rules) and entry.rewrite_rules.length
+            entry.rewrite_rules = entry.rewrite_rules.map normalizeRewriteRule
+        else
+        normalize    entry.rewrite_rules = null
+
+    return entry
+
+normalizeRewriteRule = (rule) ->
     rule = if Array.isArray(rule) then rule else []
     rv =
         regex: '^/'
@@ -215,34 +233,6 @@ mapRewriteRule = (rule) ->
     
     return rv
 
-# Utility
-mapEntry = (entry) ->
-    entry or= {}
-    if typeof entry.virtual_host isnt 'string'
-        entry.virtual_host = 'localhost'
 
-    if typeof entry.port isnt 'number'
-        entry.port = 8080
-
-    if typeof entry.host isnt 'string'
-        entry.host = '127.0.0.1'
-
-        if Array.isArray(entry.rewrite_rules) and entry.rewrite_rules.length
-            entry.rewrite_rules = entry.rewrite_rules.map mapRewriteRule
-        else
-            entry.rewrite_rules = null
-
-    return entry
-
-
-# The entire Proxy class is public
 exports.Proxy = Proxy
-
-
-# If we're run from the command line then load the passed configuration file
-# and fire up a proxy server.
-if require.main is module
-    filename = process.argv[1]
-    proxy = new Proxy()
-    proxy.start filename
 
