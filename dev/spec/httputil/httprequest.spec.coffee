@@ -1,6 +1,6 @@
 httputil = require '../../../lib/httputil'
 
-describe 'make GET request with set options', ->
+describe 'httputil Client.get()', ->
     it 'should return a checker function which provides a response', ->
         client = new httputil.Client('example.com')
         {check, request} = client.get()
