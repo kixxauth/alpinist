@@ -20,7 +20,6 @@ class Client
     send: (opts) ->
         opts = @extend opts
         rv = null
-        util.debug "host #{opts.host} port #{opts.port}"
 
         request = http.get opts, (res) ->
             buff = ''

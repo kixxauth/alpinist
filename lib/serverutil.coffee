@@ -1,6 +1,25 @@
 events = require 'events'
 http   = require 'http'
 
+write404 = (res, message) ->
+    res.writeHead 404, {'content-type': 'text/html'}
+    body = "<html><body><p>#{ message }</p></body></html>"
+    res.end body
+    return
+
+exports.write404 = write404
+
+
+write500 = (res, err) ->
+    res.writeHead 500, {'content-type': 'text/plain'}
+    body = "A server error has been intercepted by proxy: 
+    #{ err.name }: #{ err.message }"
+    res.end body
+    return
+
+exports.write500 = write500
+
+
 class Manager extends events.EventEmitter
     defaults:
         port: 8080
