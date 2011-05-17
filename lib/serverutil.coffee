@@ -20,6 +20,36 @@ write500 = (res, err) ->
 exports.write500 = write500
 
 
+rewriteURL = (path, rules) ->
+    rv =
+        path: path
+        host: null
+        port: null
+
+    if not Array.isArray(rules)
+        rules = []
+
+    if not rules.length then return rv
+
+    for rule in rules
+        match = rule.regex.exec path
+        if match
+            if typeof rule.path is 'string'
+                rv.path = rule.path
+                if match.length > 1
+                    for i in [1..match.length]
+                        rv.path = rv.path.replace "$#{i}", match[i]
+            if typeof rule.host is 'string'
+                rv.host = rule.host
+            if typeof rule.port is 'number'
+                rv.port = rule.port
+            return rv
+
+    return rv
+
+exports.rewriteURL = rewriteURL
+
+
 class Manager extends events.EventEmitter
     defaults:
         port: 8080
