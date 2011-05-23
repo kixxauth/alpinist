@@ -51,7 +51,7 @@ describe 'RewriteRule', ->
     it 'Should create a default .regex propery if not in the spec', ->
         rr = new serverutil.RewriteRule()
         expect(rr.regex.ignoreCase).toBe(true)
-        expect(rr.regex.source).toBe('^\/[.]+')
+        expect(rr.regex.source).toBe('^/')
 
     it 'Should accept a regex spec', ->
         rr = new serverutil.RewriteRule({regex: '^\/home/page$'})

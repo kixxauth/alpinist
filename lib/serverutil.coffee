@@ -28,7 +28,7 @@ class RewriteRule
     constructor: (spec) ->
         spec or= {}
 
-        spec.regex = typeof spec.regex is 'string' and spec.regex or '^\/[.]+'
+        spec.regex = typeof spec.regex is 'string' and spec.regex or '^/'
         @regex = new RegExp(spec.regex, 'i')
 
         spec.path = typeof spec.path is 'string' and spec.path or '/'
