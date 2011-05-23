@@ -46,6 +46,44 @@ describe 'default 500 utility', ->
         serverutil.write500 res, new Error 'foo'
 
 
+describe 'RewriteRule', ->
+
+    it 'Should create a default .regex propery if not in the spec', ->
+        rr = new serverutil.RewriteRule()
+        expect(rr.regex.ignoreCase).toBe(true)
+        expect(rr.regex.source).toBe('^\/[.]+')
+
+    it 'Should accept a regex spec', ->
+        rr = new serverutil.RewriteRule({regex: '^\/home/page$'})
+        expect(rr.regex.ignoreCase).toBe(true)
+        expect(rr.regex.source).toBe('^\/home/page$')
+        expect(typeof rr.regex.exec).toBe('function')
+
+    it 'Should create a default .path propery if not in the spec', ->
+        rr = new serverutil.RewriteRule()
+        expect(rr.path).toBe('/')
+
+    it 'Should accept a path spec', ->
+        rr = new serverutil.RewriteRule({path: '/home/page'})
+        expect(rr.path).toBe('/home/page')
+
+    it 'Should create a default .host propery if not in the spec', ->
+        rr = new serverutil.RewriteRule()
+        expect(rr.host).toBe('127.0.0.1')
+
+    it 'Should accept a host spec', ->
+        rr = new serverutil.RewriteRule({host: '58.23.46.1'})
+        expect(rr.host).toBe('58.23.46.1')
+
+    it 'Should create a default .port propery if not in the spec', ->
+        rr = new serverutil.RewriteRule()
+        expect(rr.port).toBe(0)
+
+    it 'Should accept a host port', ->
+        rr = new serverutil.RewriteRule({port: 8080})
+        expect(rr.port).toBe(8080)
+
+
 describe 'rewriteURL()', ->
 
     it 'should return the path if no rules are passed', ->

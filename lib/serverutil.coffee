@@ -19,6 +19,29 @@ write500 = (res, err) ->
 
 exports.write500 = write500
 
+class RewriteRule
+    regex: null
+    path: null
+    host: null
+    port: null
+
+    constructor: (spec) ->
+        spec or= {}
+
+        spec.regex = typeof spec.regex is 'string' and spec.regex or '^\/[.]+'
+        @regex = new RegExp(spec.regex, 'i')
+
+        spec.path = typeof spec.path is 'string' and spec.path or '/'
+        @path = spec.path
+
+        spec.host = typeof spec.host is 'string' and spec.host or '127.0.0.1'
+        @host = spec.host
+
+        spec.port = typeof spec.port is 'number' and spec.port or 0
+        @port = spec.port
+
+exports.RewriteRule = RewriteRule
+
 
 rewriteURL = (path, rules) ->
     rv =
