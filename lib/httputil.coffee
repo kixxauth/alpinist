@@ -12,6 +12,7 @@ class Client
             if @host isnt 'localhost' and @host isnt '127.0.0.1'
                 @port = 80
         else
+            opts or= {}
             if typeof opts.host is 'string' then @host = opts.host
             if typeof opts.port is 'number' then @port = opts.port
 
@@ -19,13 +20,22 @@ class Client
 
     get: (path, headers) ->
         path or= '/'
-        @send {method: 'GET', path: path, headers: headers}
+        return @send {method: 'GET', path: path, headers: headers}
+
+    post: (path, headers, data) ->
+        path or= '/'
+
+        if not data
+            data = headers
+            headers = null
+
+        return @send {method: 'POST', path: path, headers: headers, data: data}
 
     send: (opts) ->
         opts = @extend opts
         rv = null
 
-        request = http.get opts, (res) ->
+        request = http.request opts, (res) ->
             buff = ''
 
             res.setEncoding 'utf8'
@@ -47,6 +57,9 @@ class Client
                 error: err
                 response: null
 
+        if opts.data
+            request.write(opts.data)
+
         request.end()
 
         check = ->
@@ -61,6 +74,7 @@ class Client
             method: @method
             path: @path
             headers: @headers
+            data: ''
 
         opts or= {}
         if opts.host and typeof opts.host is 'string'
@@ -73,6 +87,8 @@ class Client
             rv.path = opts.path
         if opts.headers and typeof opts.headers is 'object'
             rv.headers = opts.headers
+        if typeof opts.data is 'string'
+            rv.data = opts.data
 
         return rv
 
