@@ -11,6 +11,10 @@ class Client
             @host = opts
             if @host isnt 'localhost' and @host isnt '127.0.0.1'
                 @port = 80
+        else
+            if typeof opts.host is 'string' then @host = opts.host
+            if typeof opts.port is 'number' then @port = opts.port
+
         return
 
     get: (path, headers) ->

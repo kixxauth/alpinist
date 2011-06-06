@@ -1,8 +1,10 @@
+http = require 'http'
+
 httputil = require '../../../lib/httputil'
 
 describe 'httputil Client.get()', ->
     it 'should return a checker function which provides a response', ->
-        client = new httputil.Client('example.com')
+        client = new httputil.Client('www.google.com')
         {check, request} = client.get()
 
         expect(check()).toBe null
@@ -11,7 +13,7 @@ describe 'httputil Client.get()', ->
             expect(typeof check).toBe 'function'
             {error, response} = check()
             expect(typeof response).toBe 'object'
-            expect(response.statusCode).toBe 302
+            expect(response.statusCode).toBe 200
             expect(typeof response.body).toBe 'string'
 
     it 'should return an error object on invalid domain', ->
@@ -35,4 +37,31 @@ describe 'httputil Client.get()', ->
             expect(typeof error).toBe 'object'
             expect(error.code).toBe 'ECONNREFUSED'
             expect(response).toBe null
+
+    it 'should accept a port number for the request', ->
+        serverRunning = false
+
+        server = http.createServer (req, res) ->
+            res.writeHead(200)
+            res.end('ok')
+            return
+
+        server.listen 8000, 'localhost', ->
+            return serverRunning = true
+
+        checkServer = ->
+            return serverRunning
+
+        waitsFor(checkServer, 'local server started', 3000)
+        runs ->
+            client = new httputil.Client({host: 'localhost', port: 8000})
+            {check, request} = client.get()
+
+            expect(check()).toBe null
+            waitsFor check, 'client response from localhost:8000', 3000
+            runs ->
+                server.close()
+                {error, response} = check()
+                expect(error).toBe null
+                expect(response.body).toBe 'ok'
 

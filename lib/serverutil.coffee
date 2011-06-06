@@ -118,3 +118,24 @@ class Manager extends events.EventEmitter
 
 
 exports.Manager = Manager
+
+class HttpProxy
+    proxyRequest: (request, response, options) ->
+        host = options.host
+        port = options.port
+
+        proxyOpts =
+            host: host
+            port: port
+            method: request.method
+            path: request.url
+            headers: request.headers
+
+        reverseProxy = http.request proxyOpts, (proxyResponse) ->
+            response.writeHead(proxyResponse.statusCode, proxyResponse.headers)
+            proxyResponse.pipe(response)
+
+        request.pipe(reverseProxy)
+        return
+
+exports.HttpProxy = HttpProxy
