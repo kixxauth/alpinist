@@ -43,6 +43,41 @@ class RewriteRule
 exports.RewriteRule = RewriteRule
 
 
+# @param {String} path An URL path string like /foo/bar.html
+# @param {Array} rules A list of RewriteRule instance objects
+#
+# @returns {Object} A object with properties .path, .host, and .port
+#
+# An instance of RewriteRule my include .regex, .path, .host, and .port
+# definitions.
+#
+# If no rules are passed, the path is simply returned as is.
+#
+# If no rules are matched using the .regex property the path is simply returned
+# as is.
+#
+# The first .regex match is used and the rest are ignored.
+#
+# If no .path is given in a matched RewriteRule instance, the .path is simply returned
+# as is.
+#
+# The returned .path will be the .path of the RewriteRule if a match is made
+# using the .regex property of the rule.
+#
+# If there is a .host property on a matched RewriteRule, the returned object
+# will inherit the .host property.
+#
+# If there is a .port property on a matched RewriteRule, the returned object
+# will inherit the .port property.
+#
+# If there is a subgroup in the .regex of the RewriteRule and replacement
+# characters in the .path of the rewrite rule, then replacement will take
+# effect in the returned .path. Example:
+#
+#       rules = [{regex: /^\/foopath\/([a-z]*)\/uid\/(.*)/, path: '/barpath/$1/id/$2'}]
+#       newURL = serverutil.rewriteURL('/foopath/val/uid/123qwe', rules)
+#       expect(newURL.path).toBe '/barpath/val/id/123qwe'
+#
 rewriteURL = (path, rules) ->
     rv =
         path: path
