@@ -21,7 +21,26 @@ describe 'default 404 utility', ->
                 expect(b).toMatch /foo/
                 end = true
 
-        serverutil.write404 res, 'foo'
+        return serverutil.write404(res, 'foo')
+
+    it 'should not write a body if no error message is passed', ->
+        writeHead = false
+        end = false
+
+        res =
+            writeHead: (status, headers) ->
+                expect(writeHead).toBe false
+                expect(end).toBe false
+                expect(status).toBe 404
+                expect(headers['content-type']).toBe 'text/html'
+                writeHead = true
+            end: (b)->
+                expect(writeHead).toBe true
+                expect(end).toBe false
+                expect(b).toBe '\n'
+                end = true
+
+        return serverutil.write404(res)
 
 
 describe 'default 500 utility', ->
@@ -43,7 +62,26 @@ describe 'default 500 utility', ->
                 expect(b).toMatch /Error: foo/
                 end = true
 
-        serverutil.write500 res, new Error 'foo'
+        return serverutil.write500(res, new Error('foo'))
+
+    it 'should not write a body if no error object is passed', ->
+        writeHead = false
+        end = false
+
+        res =
+            writeHead: (status, headers) ->
+                expect(writeHead).toBe false
+                expect(end).toBe false
+                expect(status).toBe 500
+                expect(headers['content-type']).toBe 'text/plain'
+                writeHead = true
+            end: (b)->
+                expect(writeHead).toBe true
+                expect(end).toBe false
+                expect(b).toBe '\n'
+                end = true
+
+        return serverutil.write500(res)
 
 
 describe 'RewriteRule', ->

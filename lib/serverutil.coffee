@@ -3,7 +3,9 @@ http   = require 'http'
 
 write404 = (res, message) ->
     res.writeHead 404, {'content-type': 'text/html'}
-    body = "<html><body><p>#{ message }</p></body></html>"
+    body = "\n"
+    if message
+        body = "<html><body><p>#{ message }</p></body></html>\n"
     res.end body
     return
 
@@ -12,8 +14,10 @@ exports.write404 = write404
 
 write500 = (res, err) ->
     res.writeHead 500, {'content-type': 'text/plain'}
-    body = "A server error has been intercepted by proxy: 
-    #{ err.name }: #{ err.message }"
+    body = '\n'
+    if err and typeof err is 'object'
+        body = "A server error has been encountered: 
+        #{ err.name }: #{ err.message }\n"
     res.end body
     return
 
