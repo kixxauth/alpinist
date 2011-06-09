@@ -126,7 +126,12 @@ class Manager extends events.EventEmitter
     # success handler is the second parameter:
     #   onSuccess
     applyServer: (opts, onSuccess) ->
+        if not onSuccess and typeof opts is 'function'
+            onSuccess = opts
+            opts = null
+
         opts or= {}
+
         if typeof opts.port isnt 'number'
             opts.port = @defaults.port
         if typeof opts.host isnt 'string'

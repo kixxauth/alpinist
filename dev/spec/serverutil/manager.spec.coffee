@@ -70,6 +70,11 @@ describe 'serverutil Manager::applyServer()', ->
                 # still need to close the server here.
                 server.close()
                 waitsFor serverClosed, 'server to close', 300
+                return
+
+            return
+
+        return
 
 
 describe 'serverutil Manager', ->
@@ -128,3 +133,41 @@ describe 'serverutil Manager', ->
             runs ->
                 server.close()
                 waitsFor serverClosed, 'server to close', 300
+                return
+
+            return
+
+        return
+
+    it 'should set default options', ->
+        closed = false
+        open = false
+        manager = new serverutil.Manager()
+
+        server = manager.applyServer (s) ->
+            expect(s).toBe server
+            open = true
+
+        server.on 'close', ->
+            closed = true
+
+        serverOpen = ->
+            return open
+
+        serverClosed = ->
+            return closed
+
+        # Give it some time to get started
+        waitsFor serverOpen, '201 server to start', 300
+        runs ->
+            {address, port} = server.address()
+            expect(address).toBe '127.0.0.1'
+            expect(port).toBe 8080
+
+            # Even though we're not testing the close functionality, we
+            # still need to close the server here.
+            server.close()
+            waitsFor serverClosed, 'server to close', 300
+            return
+
+        return
