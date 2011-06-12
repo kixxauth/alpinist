@@ -15,6 +15,7 @@ describe 'Alpinist::createServer()', ->
 
         waitsFor(checkServer, 'server to start', 1000)
         runs ->
+            expect(server.host()).toBe 'http://127.0.0.1:8080'
             {check, request} = client.get()
             waitsFor(check, 'request to 127.0.0.1:8080', 1000)
             runs ->
@@ -33,9 +34,9 @@ describe 'Alpinist::createServer()', ->
             return
         return
     
-    it 'middleware can be added', ->
+    it 'should allow middleware to be added', ->
         serverRunning = false
-        client = new httputil.Client('127.0.0.1')
+        client = new httputil.Client({host: '127.0.0.1', port: 8000})
 
         first = (req, res, next) ->
             res.writeHead(200, {'Content-Type':'text/plain'})
@@ -50,7 +51,7 @@ describe 'Alpinist::createServer()', ->
 
         server = alpinist.createServer(first, second, last)
 
-        server.listen ->
+        server.listen 8000, '127.0.0.1', ->
             return serverRunning = true
 
         checkServer = ->
@@ -58,6 +59,7 @@ describe 'Alpinist::createServer()', ->
 
         waitsFor(checkServer, 'server to start', 1000)
         runs ->
+            expect(server.host()).toBe 'http://127.0.0.1:8000'
             {check, request} = client.get()
             waitsFor(check, 'request to 127.0.0.1:8080', 1000)
             runs ->

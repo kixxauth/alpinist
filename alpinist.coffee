@@ -30,8 +30,11 @@ class Server
 
         if typeof port isnt 'number'
             serverOpts.port = 8080
+        else serverOpts.port = port
+
         if not host or typeof host isnt 'string'
             serverOpts.host = '127.0.0.1'
+        else serverOpts.host = host
 
         @server = manager.applyServer serverOpts, ->
             if typeof callback is 'function'
