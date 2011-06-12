@@ -2,8 +2,7 @@ fs        = require 'fs'
 path      = require 'path'
 childProc = require 'child_process'
 
-verbose = true
-colored = true
+option('-v', '--verbose', 'verbose output')
 
 extendGlobalWith = (obj) ->
     for key, val of obj
@@ -13,7 +12,10 @@ checkAndRemoveFile = (filepath) ->
     if path.existsSync(filepath)
         return fs.unlinkSync(filepath)
 
-task 'test', 'run the full spec test suite', ->
+task 'test', 'run the full spec test suite', (options) ->
+    verbose = options.verbose and true or false
+    colored = true
+
     try
         jasmine = require './dev/third_party/jasmine-node/lib/jasmine-node'
     catch requireError
@@ -23,18 +25,13 @@ task 'test', 'run the full spec test suite', ->
 
     extendGlobalWith jasmine
 
-    for arg in process.argv
-        switch arg
-            when '--no-color' then colored = false
-            when '--silent' then verbose = false
-
     specPath = path.join __dirname, 'dev', 'spec'
 
     afterSpecRun = (runner, log) ->
         failures = runner.results().failedCount
         if failures then process.exit 1 else process.exit 0
 
-    pattern = new RegExp "spec\.(js|coffee)$", "i"
+    pattern = new RegExp "spec\.coffee$", "i"
     jasmine.executeSpecsInFolder specPath, afterSpecRun, verbose, colored, pattern
 
 task 'update', 'update the project repository', ->

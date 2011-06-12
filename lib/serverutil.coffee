@@ -156,7 +156,7 @@ class Manager extends events.EventEmitter
         # attach event listeners
         process.nextTick ->
             server.listen opts.port, opts.host, ->
-                onSuccess server
+                onSuccess(server)
 
         return server
 
@@ -191,3 +191,108 @@ class HttpProxy extends events.EventEmitter
         return
 
 exports.HttpProxy = HttpProxy
+
+
+class ProxyProcessor
+    proxy: null
+    table: []
+
+    constructor: (table) ->
+        if not Array.isArray(table) then table = []
+        @table = ProxyProcessor.normalizeTable(table)
+        @proxy = new HttpProxy()
+
+        @proxy.on 'error', (err) ->
+            # TODO: Proper logging
+            return process.stderr.write("HttpProxy error event\n")
+
+    @testEntries = (vhost, table) ->
+        return table[vhost] or null
+
+    @normalizeHost = (host) ->
+        host = host.split(':')[0]
+        return (if typeof host is 'string' then host else '').toLowerCase()
+
+    @normalizeTable = (table) ->
+        rv = {}
+
+        for entry in table
+            entry or= {}
+            if typeof entry.virtual_host isnt 'string'
+                entry.virtual_host = 'localhost'
+
+            rv[entry.virtual_host] = newEntry = {}
+
+            if typeof entry.port isnt 'number'
+                newEntry.port = 8080
+            else newEntry.port = entry.port
+
+            if typeof entry.host isnt 'string'
+                newEntry.host = '127.0.0.1'
+            else newEntry.host = entry.host
+
+            if Array.isArray(entry.rewrite_rules) and entry.rewrite_rules.length
+                newEntry.rewrite_rules = entry.rewrite_rules
+                    .map(ProxyProcessor.normalizeRewriteRule)
+            else
+                newEntry.rewrite_rules = null
+
+        return rv
+
+    @normalizeRewriteRule = (rule) ->
+        rule = if Array.isArray(rule) then rule else []
+        rv =
+            regex: '^/'
+            path: ''
+            port: null
+            host: null
+
+        if rule.length > 0
+            if typeof rule[0] is 'string'
+                try
+                    rv.regex = new RegExp(rule[0])
+                catch e
+
+        if rule.length > 1
+            if typeof rule[1] is 'string'
+                rv.path = rule[1]
+
+        if rule.length > 2 and rule[2] and typeof rule[2] is 'object'
+            if typeof rule[2].port is 'number'
+                rv.port = rule[2].port
+            if typeof rule[2].host is 'string'
+                rv.host = rule[2].host
+    
+        return rv
+
+    middleware: (opts) ->
+        opts or= {}
+        table = @table
+        proxy = @proxy
+
+        processor = (req, res, next) ->
+            vhost = ProxyProcessor.normalizeHost(req.headers.host)
+            entry = ProxyProcessor.testEntries(vhost, table)
+            url   = null
+            host  = null
+            port  = null
+
+            if not entry
+                msg = "Could not find server for host name '#{ vhost }'."
+                return write404(res, msg)
+
+            if entry.rewrite_rules
+                {url, host, port} = rewriteURL(req.url, entry.rewrite_rules)
+
+            proxyOptions =
+                host: host or entry.host
+                port: port or entry.port
+
+            req.url = url or req.url
+
+            return proxy.proxyRequest(req, res, proxyOptions)
+
+        return processor
+
+exports.ProxyProcessor = ProxyProcessor
+
