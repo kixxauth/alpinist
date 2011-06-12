@@ -1,6 +1,8 @@
 serverutil = require './lib/serverutil'
 modStack   = require './lib/third_party/stack/stack'
 
+exports.ProxyProcessor = serverutil.ProxyProcessor
+
 manager = new serverutil.Manager()
 
 
