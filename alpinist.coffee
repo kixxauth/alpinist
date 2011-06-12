@@ -46,6 +46,10 @@ class Server
         @server.close()
         return @
 
+    host: ->
+        {address, port} = @server.address()
+        return "http://#{ address }:#{ port }"
+
 
 createServer = ->
     return new Server(modStack.stack.apply({}, arguments))
