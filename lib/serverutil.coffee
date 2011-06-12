@@ -94,7 +94,7 @@ rewriteURL = (path, rules) ->
     if not rules.length then return rv
 
     for rule in rules
-        match = rule.regex.exec path
+        match = rule.regex.exec(path)
         if match
             if typeof rule.path is 'string'
                 rv.path = rule.path
@@ -282,13 +282,13 @@ class ProxyProcessor
                 return write404(res, msg)
 
             if entry.rewrite_rules
-                {url, host, port} = rewriteURL(req.url, entry.rewrite_rules)
+                {path, host, port} = rewriteURL(req.url, entry.rewrite_rules)
 
             proxyOptions =
                 host: host or entry.host
                 port: port or entry.port
 
-            req.url = url or req.url
+            req.url = path or req.url
 
             return proxy.proxyRequest(req, res, proxyOptions)
 

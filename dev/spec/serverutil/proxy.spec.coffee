@@ -231,7 +231,7 @@ describe 'serverutil ProxyProcessor middleware', ->
 
         proxied = http.createServer (req, res) ->
             res.writeHead(200)
-            res.end('ok')
+            res.end(req.url)
             return
 
         proxied.listen 9090, '127.0.0.1', ->
@@ -253,6 +253,6 @@ describe 'serverutil ProxyProcessor middleware', ->
 
                 {response, error} = check()
                 expect(response.statusCode).toBe(200)
-                expect(response.body).toBe('ok')
+                expect(response.body).toBe('/appname/')
         return
 
