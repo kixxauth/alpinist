@@ -7,3 +7,6 @@
 [submodule "dev/third_party/coffee-script"]
 	path = dev/third_party/coffee-script
 	url = git://github.com/jashkenas/coffee-script.git
+[submodule "lib/third_party/optparse-js"]
+	path = lib/third_party/optparse-js
+	url = git://github.com/mostlygeek/optparse-js.git

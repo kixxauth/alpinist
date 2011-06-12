@@ -47,7 +47,7 @@ class Server
         return @
 
 
-createServer = () ->
+createServer = ->
     return new Server(modStack.stack.apply({}, arguments))
 
 exports.createServer = createServer
