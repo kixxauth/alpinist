@@ -30,7 +30,8 @@ check_status
 echo_out 'updating git submodules'
 
 git submodule update
-git submodule foreach --recursive git pull
+git submodule foreach --recursive git checkout master
+git submodule foreach --recursive git pull origin master
 check_status
 
 echo_out 'done initializing and updating git submodules'
