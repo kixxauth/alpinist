@@ -1,6 +1,8 @@
 events = require 'events'
 http   = require 'http'
 
+httputil = require './httputil'
+
 write404 = (res, message) ->
     res.writeHead 404, {'content-type': 'text/html'}
     body = "\n"
@@ -209,10 +211,6 @@ class ProxyProcessor
     @testEntries = (vhost, table) ->
         return table[vhost] or null
 
-    @normalizeHost = (host) ->
-        host = host.split(':')[0]
-        return (if typeof host is 'string' then host else '').toLowerCase()
-
     @normalizeTable = (table) ->
         rv = {}
 
@@ -271,7 +269,7 @@ class ProxyProcessor
         proxy = @proxy
 
         processor = (req, res, next) ->
-            vhost = ProxyProcessor.normalizeHost(req.headers.host)
+            vhost = httputil.normalizeHostString(req.headers.host)
             entry = ProxyProcessor.testEntries(vhost, table)
             url   = null
             host  = null

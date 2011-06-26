@@ -1,6 +1,12 @@
 util = require 'util'
 http = require 'http'
 
+normalizeHostString = (host) ->
+    hostString = if typeof host is 'string' then host else ''
+    return hostString.split(':')[0].toLowerCase()
+
+exports.normalizeHostString = normalizeHostString
+
 # HTTP client interface
 class Client
     host: 'localhost'

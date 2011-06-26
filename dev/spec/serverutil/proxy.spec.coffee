@@ -256,3 +256,24 @@ describe 'serverutil ProxyProcessor middleware', ->
                 expect(response.body).toBe('/appname/')
         return
 
+    it 'should not terminate the process when absent a host header', ->
+        request =
+            headers: {}
+
+        response =
+            writeHead: ->
+            end: ->
+
+        spyOn(response, 'writeHead')
+        spyOn(response, 'end')
+
+        proxyProcessor = new serverutil.ProxyProcessor()
+        proxy = proxyProcessor.middleware()
+
+        proxy(request, response)
+
+        head = {'content-type': 'text/html'}
+        expect(response.writeHead).toHaveBeenCalledWith(404, head)
+        expect(response.end).toHaveBeenCalled()
+        return
+
