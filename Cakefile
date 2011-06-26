@@ -2,6 +2,12 @@ fs           = require 'fs'
 path         = require 'path'
 childProcess = require 'child_process'
 
+BUILD_DIRS = [
+    './'
+    './lib/'
+    './lib/third_party/stack/'
+]
+
 verbose = false
 
 spawn = childProcess.spawn
@@ -39,6 +45,16 @@ extendGlobalWith = (obj) ->
 checkAndRemoveFile = (filepath) ->
     if path.existsSync(filepath)
         return fs.unlinkSync(filepath)
+
+cleanDirectory = (dir) ->
+    entries = fs.readdirSync(dir)
+    fs.unlinkSync(path.join(dir, li)) for li in entries when li.match(/\.js$/)
+    return
+
+cleanBuild = (callback) ->
+    cleanDirectory(dir) for dir in BUILD_DIRS
+    console.log('ok: cleanup is done')
+    return
 
 
 task 'test', 'run the full spec test suite', (options) ->
@@ -85,13 +101,8 @@ task 'update', 'update the project repository', ->
 
 task 'build', 'build the Alpinist', (options) ->
     setOptions(options)
-    directories = [
-        './'
-        './lib/'
-        './lib/third_party/stack/'
-    ]
 
-    len = directories.length
+    len = BUILD_DIRS.length
     count = 0
 
     onCoffeeBuild = (status) ->
@@ -106,5 +117,11 @@ task 'build', 'build the Alpinist', (options) ->
         if count is len
             console.log('ok: build done')
 
-    brewDirectory(dir, onCoffeeBuild) for dir in directories
+    brewDirectory(dir, onCoffeeBuild) for dir in BUILD_DIRS
+    return
+
+
+task 'clean', 'clean out build files (*.js)', (options) ->
+    setOptions(options)
+    cleanBuild()
     return
